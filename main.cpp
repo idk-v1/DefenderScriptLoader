@@ -146,6 +146,67 @@ std::vector<std::string> tokenize(std::string line)
 }
 
 
+void makeParameters(std::vector<std::string>& tokens, std::vector<Script>& scripts, Action** lastAction)
+{
+	Action* action = new Action();
+	if (tokens[0] == "end")
+	{
+		scripts[scripts.size() - 1].loopPtr =
+			scripts[scripts.size() - 1].loopPtr->next;
+
+		scripts.push_back(Script());
+		*lastAction = &scripts[scripts.size() - 1].actions;
+
+		delete action;
+		return;
+	}
+	else if (tokens[0] == "spawn")
+	{
+		action->type = Actions::SPAWN;
+		action->spawn.entity = atoi(tokens[1].data());
+		action->spawn.x = atoi(tokens[2].data());
+		action->spawn.y = atoi(tokens[3].data());
+		action->spawn.script = atoi(tokens[4].data());
+	}
+	else if (tokens[0] == "move")
+	{
+		action->type = Actions::MOVE;
+		action->move.x = atoi(tokens[1].data());
+		action->move.y = atoi(tokens[2].data());
+	}
+	else if (tokens[0] == "dir")
+	{
+		action->type = Actions::DIR;
+		action->dir.dir = tokens[1][0];
+	}
+	else if (tokens[0] == "wait")
+	{
+		action->type = Actions::WAIT;
+		action->wait.time = atof(tokens[1].data());
+	}
+	else if (tokens[0] == "fire")
+	{
+		action->type = Actions::FIRE;
+	}
+	else if (tokens[0] == "loop")
+	{
+		// loopPtr is null, im too tired to think
+		// just set it to next after done with all this stuff
+		scripts[scripts.size() - 1].loopPtr = *lastAction;
+
+		delete action;
+		return;
+	}
+	else // invalid op
+	{
+		delete action;
+		return;
+	}
+	(*lastAction)->next = action;
+	*lastAction = action;
+}
+
+
 std::vector<Script> loadScripts(std::string name)
 {
 	std::vector<Script> scripts;
@@ -166,61 +227,7 @@ std::vector<Script> loadScripts(std::string name)
 				std::vector<std::string> tokens = tokenize(line);
 				if (tokens.size() > 0)
 				{
-					Action* action = new Action();
-					if (tokens[0] == "end")
-					{
-						scripts[scripts.size() - 1].loopPtr = 
-							scripts[scripts.size() - 1].loopPtr->next;
-
-						scripts.push_back(Script());
-						lastAction = &scripts[scripts.size() - 1].actions;
-
-						delete action;
-						continue;
-					}
-					else if (tokens[0] == "spawn")
-					{
-						action->type = Actions::SPAWN;
-						action->spawn.entity = atoi(tokens[1].data());
-						action->spawn.x = atoi(tokens[2].data());
-						action->spawn.y = atoi(tokens[3].data());
-						action->spawn.script = atoi(tokens[4].data());
-					}
-					else if (tokens[0] == "move")
-					{
-						action->type = Actions::MOVE;
-						action->move.x = atoi(tokens[1].data());
-						action->move.y = atoi(tokens[2].data());
-					}
-					else if (tokens[0] == "dir")
-					{
-						action->type = Actions::DIR;
-						action->dir.dir = tokens[1][0];
-					}
-					else if (tokens[0] == "wait")
-					{
-						action->type = Actions::WAIT;
-						action->wait.time = atof(tokens[1].data());
-					}
-					else if (tokens[0] == "fire")
-					{
-						action->type = Actions::FIRE;
-					}
-					else if (tokens[0] == "loop")
-					{
-						// loopPtr is null, im too tired to think
-						// just set it to next after done with all this stuff
-						scripts[scripts.size() - 1].loopPtr = lastAction;
-
-						delete action;
-						continue;
-					}
-					else // invalid op
-					{
-						delete action;
-					}
-					lastAction->next = action;
-					lastAction = action;
+					makeParameters(tokens, scripts, &lastAction);
 				}
 			}
 		}
