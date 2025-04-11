@@ -225,7 +225,7 @@ std::vector<Script> loadScripts(std::string name)
 
 int main()
 {
-	std::vector<Script> scripts = loadScripts("test.txt");
+	std::vector<Script> scripts = loadScripts("test.dscr");
 
 	for (int i = 0; i < scripts.size(); i++)
 	{
