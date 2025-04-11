@@ -89,6 +89,17 @@ struct Script
 {
 	Action actions;
 	Action* loopPtr = NULL;
+
+	void del()
+	{
+		Action* next = actions.next;
+		for (; next; )
+		{
+			Action* temp = next->next;
+			delete next;
+			next = temp;
+		}
+	}
 };
 
 std::string formatLine(const std::string& line)
@@ -232,7 +243,7 @@ int main()
 		std::cout << "\nScript [" << i << "]:\n";
 		Action* next = scripts[i].actions.next;
 		bool loop = false;
-		for (int c = 0; next; c++)
+		for (; next;)
 		{
 			if (scripts[i].loopPtr == next)
 				loop = true;
@@ -240,6 +251,9 @@ int main()
 			next = next->next;
 		}
 	}
+
+	for (int i = 0; i < scripts.size(); i++)
+		scripts[i].del();
 
 	return 0;
 }
